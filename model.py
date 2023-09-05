@@ -40,79 +40,63 @@ class DenseLayer(object):
 	
 	def update(self, error_signal):
 		#delta 	= mat_mat_dot_product(self.inputs, error_signal)
-		gradient = mat_mat_dot_product(transpose(error_signal), f_2.inputs)
-		self.weights = mat_mat_minus(self.weights, gradient)
-		#self.bias = 
+		gradient = mat_mat_dot_product(transpose(error_signal), self.inputs)
+		
+		weight_gradient = mat_scalar_divide(gradient, len(self.inputs))
+		bias_gradient = vec_scalar_divide(sum_up_matrix_by_cols(gradient), len(self.inputs))
+		
+		self.weights = mat_mat_minus(self.weights, weight_gradient)
+		self.bias = vec_minus_vec(self.bias, bias_gradient)
 
+		return gradient
 	
 
-f_1 = DenseLayer(5, relu_function)
+
+class DenseModel(object):
+	"""docstring for DenseModel"""
+	def __init__(self, layer_config, activation_functions):
+		super(DenseModel, self).__init__()
+		self.layer_config 			= layer_config
+		self.activation_functions	= activation_functions
+		self.inputs 				= None
+		self.targets 				= None
+		self.layers 				= []
+		self.output					= None
+		self.activation				= None
+		self.built					= False
+	
+	def __call__(self, inputs, targets):
+		self.inputs 		= inputs
+		self.targets 		= targets
+		
+		if not self.built:
+
+			for i in range(len(self.layer_config)):
+				self.layers.append(DenseLayer(self.layer_config[i], self.activation_functions[i]))
+			self.built 		= True
+		
+		self.output = self.inputs
+		for layer in self.layers:
+			self.output = layer(self.output, self.targets)
+		
+		return self.output
+
+	def backpropagation(self):
+		calculate_loss = mean_squared_error(self.output, self.targets)
+		error_signal = mat_vec_multiplication(relu_function_derivative(self.layers[-1].activation) , calculate_loss)
+
+		for layer in self.layers[::-1]:
+			error_signal = layer.update(error_signal)
+
+
+model = DenseModel([4,3,2], [relu_function, relu_function, relu_function])
+
 zuzu = [[1,-10,20,2], [2,2,2,3], [-3, -1, 5, 5]]
 zizi = [ [1, 1], [1,1], [1,1]]
 
-#zuzu = [[1,-10,20]]
-#zizi = [ [1, 1, 1]]
 
-out_1 = f_1(zuzu, zizi)
-#print("\n")
-#print(f_1.weights)
-#print("\n")
-#print(out_1)
-#print("\n")
+print(model(zuzu, zizi))
+print(model.layers[0].weights)
+model.backpropagation()
+print(model.layers[0].weights)
 
-
-f_2 = DenseLayer(2, relu_function)
-out_2 = f_2(out_1, zizi)
-#print(out_2)
-#print("\n")
-
-error = mean_squared_error(out_2, zizi)
-#print("errororo: ", error)
-#print("\n")
-
-#print(relu_function_derivative(f_2.activation))
-#print("activ: ", f_2.activation)
-#print(f_2.weights)
-#print("\n")
-#print(f_2.output)
-#print(relu_function_derivative(f_2.activation))
-
-# gradient x activations * activation_derivative
-# need to get to --> 2 x 5 
-# which is the size of the weights 
-# altough we need the 2 x 5 excatly batch_size number of times 
-# which could be seen as two 1 x 5, which could be batch_size x 5 
-# 
-
-# [ 1 x 2 ] x [ 2 x 5 ] x [ 1 x 2 ]
-
-print(f_2.bias)
-#print(relu_function_derivative(f_2.activation))
-dd = mat_vec_multiplication(relu_function_derivative(f_2.activation) , error)
-print(dd)
-print(sum_up_matrix_by_cols(dd))
-#print(transpose(dd))
-
-#print(mat_mat_dot_product(dd, f_2.inputs))
-#print(mat_mat_dot_product(transpose(dd), f_2.inputs))
-
-#print( mat_mat_dot_product([ [1,1,1] , [2,2,2] ]  ,  [ [2], [4], [5]]))
-
-error_signal = [ a*b for a,b in zip(error, relu_function_derivative(f_2.activation)[0])]
-
-#print(error_signal)
-#print(f_1.output)
-#print("\n")
-
-#test_transpose = [0.030179407659672877, 0.5467014038049781, 0.03869175148617696]
-#test_transpose = [ [a] for a in test_transpose ]
-
-#print([[ a*test_transpose[i] for a in f_1.output[0]] for i in range(len(test_transpose))])
-
-# THINK MORE ABOUT BACKPROPAGATION
-# WE UPDATE THE WEIGHTS ACCORDING TO THEIR CONNECTIONS
-# WHAT SHAPE DOES OUR DELTA NEED TO BE ??
-# INTUITIVE IT SHOULD BE THE SAME AS THE WEIGHTS WE ARE UPDATING, SINCE
-# NEW_WEIGHTS = OLD_WEIGHTS - UPDATE
-
-#error_signal =
