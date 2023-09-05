@@ -1,6 +1,6 @@
 import math
 import random
-from dense_helper import *
+from model_helper import *
 
 
 from sklearn.datasets import fetch_openml
