@@ -59,27 +59,59 @@ def mat_mat_minus(matrix_1, matrix_2):
 	assert len(matrix_1)    == len(matrix_2)
 	return [ [v_1 - v_2 for v_1, v_2 in zip(vector_1, vector_2)] for vector_1, vector_2 in zip(matrix_1, matrix_2) ]
 
+def mat_mat_plus(matrix_1, matrix_2):
+	assert len(matrix_1[0]) == len(matrix_2[0])
+	assert len(matrix_1)    == len(matrix_2)
+	return [ [v_1 + v_2 for v_1, v_2 in zip(vector_1, vector_2)] for vector_1, vector_2 in zip(matrix_1, matrix_2) ]
+
+
+
+def mat_mat_multiply(matrix_1, matrix_2):
+	assert len(matrix_1[0]) == len(matrix_2[0])
+	assert len(matrix_1)    == len(matrix_2)
+	return [ [v_1 * v_2 for v_1, v_2 in zip(vector_1, vector_2)] for vector_1, vector_2 in zip(matrix_1, matrix_2) ]
+
 
 
 def transpose(matrix_1):
 	return [  [column[i] for column in matrix_1] for i in range(len(matrix_1[0])) ]
 
 
+def one_hot(t, n):
+    return [0 if t != i else 1 for i in range(n)]
 
+
+def get_argmax(vector_1):
+    maxi = max(vector_1)
+    return max([ 0 if maxi != val else idx for idx,val in enumerate(vector_1)])
+
+
+def flatten(matrix_1):
+    return [v_1 for vector_1 in matrix_1 for v_1 in vector_1]
+
+
+def clip(value, between_down, between_up):
+	if between_down < value < between_up:
+		return value
+	elif value < between_down:
+			return between_down
+	else:
+		return between_up
+	
 
 
 ########### activation functions ###########
 
-def relu_function(activation):
+def relu(activation):
 	if isinstance(activation, list):
-		return [ relu_function(activation_i) for activation_i in activation ]
+		return [ relu(activation_i) for activation_i in activation ]
 	else:
 		return 0 if activation < 0 else activation
 
 
-def relu_function_derivative(activation):
+def relu_prime(activation):
 	if isinstance(activation, list):
-		return [ relu_function_derivative(activation_i) for activation_i in activation ]
+		return [ relu_prime(activation_i) for activation_i in activation ]
 	else:
 		return 0 if activation < 0 else 1
 
@@ -89,6 +121,8 @@ def sigmoid(activation):
 	if isinstance(activation, list):
 		return [ sigmoid(activation_i) for activation_i in activation ]
 	else:
+		activation =  255 if activation > 255 else activation
+		activation = -255 if activation < -255 else activation
 		return  (1/ (1 + math.exp(- activation)))
 
 
@@ -100,21 +134,49 @@ def sigmoid_prime(activation):
 	
 	
 
-#print(relu_function_derivative([[-1,1,1], [0,1,2]]))
+#def softmax(activation):
+#	print(activation)
+	#activation = flatten(activation)
+	#return [ math.exp(clip(activation_i, -255, 255)) / sum([math.exp(activation_all) for activation_all in activation]) for activation_i in activation]
+	
+def softmax(activation):
+    softmax_activation = []
+    for vector_1 in activation:
+        softmax_activation.append([ math.exp(clip(activation_i, -255, 255)) / sum([math.exp(activation_all) for activation_all in vector_1]) for activation_i in vector_1])
+    
+    return softmax_activation
 
-#print(relu_function(3))
-#print(relu_function(-3))
 
-#print(relu_function([-2,-1,0,1,2]))
-#print(relu_function([ [-2,0,2], [-1,0,1]]))
+#def softmax_prime(activation): 
+#    derv_col = []
+#    for i in range(len(activation)):
+#        derv_row = []
+#        for j in range(len(activation)):
+#            derv_row.append( activation[i] * ((i == j ) -  activation[j] ))
+#        
+#        derv_col.append(derv_row)
+#    return derv_col
 
 
+def softmax_prime(activation): 
+	derv = []
+	for vector_1 in activation:
+		derv_col = []
+		for i in range(len(vector_1)):
+			derv_row = []
+			for j in range(len(vector_1)):
+				derv_row.append( vector_1[i] * ((i == j ) -  vector_1[j] ))
+			
+			derv_col.append(derv_row)
+		derv.append(derv_col)
+	return derv
 
 ########### loss functions ###########
 
 
 
 def mean_squared_error(prediction, target):
+	#print(prediction, target)
 	assert len(prediction) == len(target) 
 	assert len(prediction[0]) == len(target[0])
 
@@ -122,6 +184,8 @@ def mean_squared_error(prediction, target):
 	summed_up_squared_error = sum_up_matrix_by_cols(squared_error)
 	return summed_up_squared_error #[ elem / len(squared_error) for elem in summed_up_squared_error]
 
+
+#print(mean_squared_error([[0.8488765622021412]],[[1.659]]))
 
 def mean_squared_error_prime(prediction, target):
 	assert len(prediction) == len(target) 
@@ -131,26 +195,73 @@ def mean_squared_error_prime(prediction, target):
 	summed_up_squared_error = sum_up_matrix_by_cols(squared_error)
 	return summed_up_squared_error 
 
+#print(mean_squared_error([[0.8488765622021412 , 1]],[[1.659, 2]]))
 
-#print(mean_squared_error( [[1,1], [3,3], [3,3]], [2,2] ))
+#def cross_entropy(predictions, targets):
+#	if isinstance(predictions, list):
+#		sum([ -(math.log(p) * t) if p != 0 else -(math.log(1e-100) * t) for p,t in zip(predictions, targets)])
+#
+#    return sum([ -(math.log(p) * t) if p != 0 else -(math.log(1e-100) * t) for p,t in zip(predictions, targets)])
 
-ert = [ [1,2,3], [2,2,2], [1,2,3] ]
-tre = [[2,3,4], [1,1,1], [3,3,3]]
+def cross_entropy(predictions, targets):
+    cross = []
+    for vector_1, vector_2 in zip(predictions, targets):
+        cross.append([ -(math.log(p) * t) if p != 0 else -(math.log(1e-100) * t) for p,t in zip(vector_1, vector_2)])
+    
+    a = sum_up_matrix_by_cols(cross)
+    return sum(a)
 
-ert = [ [1,1,1], [1,1,1], [1,1,1] ]
-ert_2 = [ [2,2,2], [2,2,3], [2,2,2] ]
+#print(cross_entropy([[1,2,3] , [1,2,3]], [[1,2,3] , [1,2,3]]))
 
-hm = [[0.9582761279044779], [0]]
-yo = [ [1] , [2] ]
-a = [1]
-b = [[-0.4089634351954671]]
+#def cross_entropy_prime(predictions, targets):
+#    return -sum([ t / p if p != 0 else ( t / math.log(1e-100) ) for p,t in zip(predictions, targets)])
 
-#print(mat_vec_dot_product(b,a))
 
-#print(mean_squared_error( ert, ert_2 ))
+def cross_entropy_prime(predictions, targets):
+	cross = []
+	for vector_1, vector_2 in zip(predictions, targets):
+		cross.append([-1 * (t / p) if p != 0 else ( t / math.log(1e-100) ) for p,t in zip(vector_1, vector_2)])
+	a = sum_up_matrix_by_cols(cross)
+	return sum(a)
 
-#for i,j in zip(ert,tre):
-#	print(i,j)
 
-#print(mean_squared_error(ert, tre))
+def accuracy_measure(predictions, targets, round_function = 6, error_margin = 0.01):
+
+	acc = 0
+	for p, t in zip(predictions, targets):
+		#print(p,t)
+		#print(abs(round(p, round_function) - t) < error_margin)
+		acc += abs(round(p, round_function) - t) < error_margin
+	return acc / len(predictions)
+
+
+def r_2(predictions, targets):
+	acc = 0
+	residual_sum_of_squares = []
+	total_sum_of_squares = []
+
+	targets_mean = sum(targets) / len(targets)
+	print(targets_mean)
+
+	for p, t in zip(predictions, targets):
+		# ((y_true - y_pred)** 2).sum() and  is the total sum of squares ((y_true - y_true.mean()) ** 2).sum()
+		residual_sum_of_squares.append((t-p)**2)
+		total_sum_of_squares.append((t-targets_mean)**2)
+
+	return (1 - (sum(residual_sum_of_squares) / sum(total_sum_of_squares)))
+
+
+function_dictionary = {
+	"relu" 			: relu,
+	"relu_prime" 		: relu_prime,
+	"sigmoid"			: sigmoid,
+	"sigmoid_prime"	: sigmoid_prime,
+	"softmax"		: softmax,
+	"softmax_prime"	: softmax_prime,
+	"mean_squared_error"		: mean_squared_error,
+	"mean_squared_error_prime"	: mean_squared_error_prime,
+	"cross_entropy"			: cross_entropy,
+	"cross_entropy_prime"	: cross_entropy_prime
+}
+
 
