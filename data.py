@@ -59,13 +59,83 @@ def load_housing_data(train_test_split = 0.6, validation = False):
     new_y = []
     for np_x, np_y in zip(X,y):
         new_x.append([ [float(x) for x in np_x]] )
-        new_y.append([ np_y ])
+        new_y.append([ [np_y] ])
 
     # shuffle data
     p = [(i,j) for i,j in zip(new_x, new_y)]
     random.shuffle(p)
     new_x = [i[0] for i in p]
     new_y = [i[1] for i in p]
+
+    # split data into train, test and validation
+    ratio = (len(new_x) / 100 ) * (train_test_split * 100)
+    
+    train_x = new_x[:int(ratio)]
+    train_y = new_y[:int(ratio)]
+
+    if not validation:
+        test_x = new_x[int(ratio):]
+        test_y = new_y[int(ratio):]
+        return [train_x, train_y], [test_x, test_y]
+    
+    else:
+        rest_ratio = (len(new_x[int(ratio):]) / 100 ) * (validation * 100)
+
+        test_x = new_x[int(ratio):-int(rest_ratio)]
+        test_y = new_y[int(ratio):-int(rest_ratio)]
+
+        val_x = new_x[-int(rest_ratio):]
+        val_y = new_y[-int(rest_ratio):]
+
+        return [train_x, train_y], [test_x, test_y], [val_x, val_y]
+    
+
+
+
+def new_load_housing_data(train_test_split = 0.6, validation = False):
+    X, y = fetch_california_housing(return_X_y=True)
+    import sklearn
+
+    scaler = sklearn.preprocessing.StandardScaler()
+    scaler.fit(X)
+    X = scaler.transform(X)
+    
+    # shuffle data
+    p = [(i,j) for i,j in zip(X, y)]
+    random.shuffle(p)
+    X = [i[0] for i in p]
+    y = [i[1] for i in p]
+
+
+    # might be overkill, but in the spirit of no extra libraries, the data is
+    # converted from numpy arrays to lists
+    new_x = []
+    new_y = []
+
+    batch = 2
+    count = 0
+
+    batch_x = []
+    batch_y = []
+
+    for np_x, np_y in zip(X,y):
+        
+        if count == batch:
+            batch_x.append(new_x)
+            batch_y.append(new_y)
+            
+            new_x = []
+            new_y = []
+            count = 0
+        #np_x = np_x[:20]    
+        new_x.append([ float(x) for x in np_x ] )
+        new_y.append( [np_y] )
+        
+        count += 1
+
+   
+    new_x = batch_x
+    new_y = batch_y
 
     # split data into train, test and validation
     ratio = (len(new_x) / 100 ) * (train_test_split * 100)
@@ -174,7 +244,7 @@ def new_load_mnist_data(train_test_split = 0.6, validation = False):
             new_x = []
             new_y = []
             count = 0
-        np_x = np_x[:20]    
+        #np_x = np_x[:20]    
         new_x.append([ float(x) for x in np_x ] )
         new_y.append( np_y )
         

@@ -75,18 +75,21 @@ class DenseLayer(object):
 
 class DenseModel(object):
 	"""docstring for DenseModel"""
-	def __init__(self, layer_config, activation_functions, error_function):
+	def __init__(self, layer_config, activation_functions, classification = False, error_function = mean_squared_error):
 		super(DenseModel, self).__init__()
 		self.layer_config 			= layer_config
 		self.activation_functions	= activation_functions
+		self.classification 		= classification
 		self.error_function			= error_function
 		self.error_function_derivative = function_dictionary[f"{error_function.__name__}_prime"]
 		self.inputs 				= None
 		self.targets 				= None
 		self.layers 				= []
 		self.output					= None
+		self.prediction				= None
 		self.activation				= None
 		self.built					= False
+		
 
 		# make acceptalbe for all activation functions
 		self.activation_functions_derivative = [ function_dictionary[f"{self.activation_functions[i].__name__}_prime"] for i in range(len(self.activation_functions)) ]
@@ -104,6 +107,9 @@ class DenseModel(object):
 		self.output = self.inputs
 		for layer in self.layers:
 			self.output = layer(self.output, self.targets)
+		
+		if self.classification:
+			self.prediction = [ get_argmax(elem_x) for elem_x in self.output ]
 		
 		return self.output
 

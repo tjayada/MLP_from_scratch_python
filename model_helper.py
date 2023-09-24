@@ -182,6 +182,7 @@ def mean_squared_error(prediction, target):
 
 	squared_error = [ [ (pred-targ)**2 for pred,targ in zip(prediction_i, target_i)] for prediction_i,target_i in zip(prediction,target) ]
 	summed_up_squared_error = sum_up_matrix_by_cols(squared_error)
+	#print(summed_up_squared_error)
 	return summed_up_squared_error #[ elem / len(squared_error) for elem in summed_up_squared_error]
 
 
@@ -225,7 +226,7 @@ def cross_entropy_prime(predictions, targets):
 	return sum(a)
 
 
-def accuracy_measure(predictions, targets, round_function = 6, error_margin = 0.01):
+def hit_or_miss(predictions, targets, round_function = 6, error_margin = 0.01):
 
 	acc = 0
 	for p, t in zip(predictions, targets):
@@ -234,7 +235,7 @@ def accuracy_measure(predictions, targets, round_function = 6, error_margin = 0.
 		acc += abs(round(p, round_function) - t) < error_margin
 	return acc / len(predictions)
 
-
+"""
 def r_2(predictions, targets):
 	acc = 0
 	residual_sum_of_squares = []
@@ -249,6 +250,36 @@ def r_2(predictions, targets):
 		total_sum_of_squares.append((t-targets_mean)**2)
 
 	return (1 - (sum(residual_sum_of_squares) / sum(total_sum_of_squares)))
+"""
+
+def r_2(predictions, targets):
+    acc = 0
+    residual_sum_of_squares = []
+    total_sum_of_squares = []
+    
+    if isinstance(predictions[0], list):
+        targets_mean = [ t / len(targets) for t in sum_up_matrix_by_cols(targets)]    
+        for p, t in zip(predictions, targets):
+            a = [ (t_i-p_i)**2 for t_i, p_i in zip(t,p)]
+            residual_sum_of_squares.append(a)
+            b = [ (t_i-m)**2 for t_i,m in zip(t,targets_mean) ]
+            total_sum_of_squares.append(b)
+
+        residual_sum_of_squares = [ sum(v_1) for v_1 in transpose(residual_sum_of_squares)]
+        total_sum_of_squares    = [ sum(v_1) for v_1 in transpose(total_sum_of_squares)]
+
+        result = [ (1 - rsd / tsq) if tsq != 0 else 0 for rsd, tsq in zip(residual_sum_of_squares, total_sum_of_squares) ]
+        return sum(result) / len(result)
+    
+    else:
+        targets_mean = sum(targets) / len(targets)
+
+        for p, t in zip(predictions, targets):
+            residual_sum_of_squares.append((t-p)**2)
+            total_sum_of_squares.append((t-targets_mean)**2)
+
+        return (1 - (sum(residual_sum_of_squares) / sum(total_sum_of_squares)))
+
 
 
 function_dictionary = {
