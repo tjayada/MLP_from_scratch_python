@@ -45,23 +45,40 @@ class DenseLayer(object):
 		#gradient = []
 		#for i in range(len(error_signal)):
 		#	gradient.append(mat_mat_dot_product(transpose(self.inputs), error_signal[i]))
+		#print("error_signal_before : " , error_signal)
+		#print("\n \n")
+		
+		#print("self.inputs : " , self.inputs)
+		#print("\n \n")
+		
+		#print("self.outputs : " , self.output)
+		#print("\n \n")
+
 		gradient = mat_mat_dot_product(transpose(self.inputs), error_signal)
 		
+		#print("gradient : " , gradient)
+		#print("\n \n")
+
 		#error_signal_list = []
 		#for i in range(len(error_signal)):
 		#	error_signal_list.append(mat_mat_dot_product(error_signal[i], transpose(self.weights) ))
 		#print("error signal in update : ", error_signal)
 		error_signal = mat_mat_dot_product(error_signal, transpose(self.weights) )
 		
+		#print("error_signal : " , error_signal)
+		#print("\n \n")
+
 		#weights = gradient[0]
 		#for i in range(len(error_signal)):
 		#gradient = mat_mat_plus(gradient[0], gradient[1])
 		
 		weight_gradient = mat_scalar_divide(gradient, len(self.inputs))
-		weight_gradient = mat_scalar_multiply(weight_gradient, 0.01)
+		#weight_gradient = gradient
+		weight_gradient = mat_scalar_multiply(weight_gradient, 0.1)
 		
 		bias_gradient = vec_scalar_divide(sum_up_matrix_by_cols(gradient), len(self.inputs))
-		bias_gradient = vec_scalar_multiply(bias_gradient, 0.01)
+		#bias_gradient = sum_up_matrix_by_cols(gradient)
+		bias_gradient = vec_scalar_multiply(bias_gradient, 0.1)
 
 		#print("self.weights" , self.weights)
 		#print("weight_gradient" , weight_gradient)
@@ -109,7 +126,11 @@ class DenseModel(object):
 			self.output = layer(self.output, self.targets)
 		
 		if self.classification:
+			#print(self.output)
+			self.output = softmax(self.output)
+			#print(self.output)
 			self.prediction = [ get_argmax(elem_x) for elem_x in self.output ]
+			#print(self.prediction)
 		
 		return self.output
 
@@ -121,8 +142,15 @@ class DenseModel(object):
 		#print("self.layers[0].weights : ", self.layers[0].weights)
 		# loss : 
 		#print("self.output: ", relu_function_derivative(self.output))
-		error_signal = mat_vec_multiplication(self.activation_functions_derivative[-1](self.output) , calculate_loss)
-		
+		#print(self.output)
+		#print("\n")
+		#print(softmax_prime(self.output))
+		error_signal = [ mat_vec_dot_product(out , calculate_loss) for out in softmax_prime(self.output)]
+		#print(self.activation_functions_derivative[-1](self.output))
+		#print(error_signal)
+		#print("\n")
+		error_signal = mat_mat_multiply(self.activation_functions_derivative[-1](self.output) , error_signal)
+		#print("error_signal : " , error_signal)
 		#print("erste cross derivative acti : " , self.activation_functions_derivative[-1](self.output)[0])
 		#print("zweite cross derivative acti : " , self.activation_functions_derivative[-1](self.output)[1])
 		#print("alles : " , self.activation_functions_derivative[-1](self.output))

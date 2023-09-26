@@ -112,7 +112,7 @@ def new_load_housing_data(train_test_split = 0.6, validation = False):
     new_x = []
     new_y = []
 
-    batch = 2
+    batch = 64
     count = 0
 
     batch_x = []
@@ -229,7 +229,7 @@ def new_load_mnist_data(train_test_split = 0.6, validation = False):
     new_x = []
     new_y = []
 
-    batch = 2
+    batch = 32
     count = 0
 
     batch_x = []
@@ -246,7 +246,7 @@ def new_load_mnist_data(train_test_split = 0.6, validation = False):
             count = 0
         #np_x = np_x[:20]    
         new_x.append([ float(x) for x in np_x ] )
-        new_y.append( np_y )
+        new_y.append( [int(elem_y) for elem_y in np_y] )
         
         count += 1
 

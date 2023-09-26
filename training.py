@@ -25,8 +25,33 @@ def train(model, X, y, epochs, show_epochs, accuracy_measure = hit_or_miss):
             #print("training")
             #print(batch_y)
 
+            if model.classification:
+                batch_not_encoded = batch_y
+                batch_y = [ one_hot(int(elem_y), 10) for elem_y in batch_y for elem_y in elem_y]
+                
+                model(batch_X, batch_y)
 
-            model(batch_X, batch_y)
+                pred = model.prediction
+                #print(pred)
+                #print(batch_not_encoded)
+                [ preds.append(elem_y) for elem_y in pred ]
+                [ trues.append(elem_y[0]) for elem_y in batch_not_encoded]
+                #preds.append(pred[0])
+                #trues.append(batch_not_encoded[0][0])
+
+
+
+            else:
+                batch_y = batch_y
+                
+                model(batch_X, batch_y)
+                
+                pred = model.output
+                preds.append(pred[0])
+                trues.append(batch_y[0])
+
+
+            #model(batch_X, batch_y)
             #print(model.output)
 
             #pred = [ get_argmax(elem_x) for elem_x in model.output ]
@@ -35,32 +60,40 @@ def train(model, X, y, epochs, show_epochs, accuracy_measure = hit_or_miss):
 
             #accuracy += accuracy_measure(model.output, batch_y, round_function=1, error_margin=1)
             #print(accuracy)
-            if model.classification:
-                pred = model.prediction
-            else:
-                pred = model.output
+            #if model.classification:
+            #    pred = model.prediction
+            #else:
+            #    pred = model.output
 
-            preds.append(pred[0])
-            trues.append(batch_y[0])
+            #preds.append(pred[0])
+            #trues.append(batch_y[0])
             
             #print(preds)
             #print(trues)
             #print(model.output)
             #print(batch_y)
             #print(model.error_function(model.output, batch_y))
+
+            # change MSE to include sum() in return function to not have to use it here ?
             loss += sum(model.error_function(model.output, batch_y)) / len(batch_y)
+            #loss += model.error_function(model.output, batch_y) / len(batch_y)
+            
+            
             #loss += sum(model.error_function(model.output, batch_y))
             #loss += accuracy_measure(pred, og_y)
             #print(loss)
 
             model.backpropagation()
 
+            #break
+        #break
+        
         if epoch % show_epochs == 0:
             #r2 = r_2(preds, trues)
             #print(preds)
             #print(trues)
             acc = accuracy_measure(preds, trues)
-            print("Epoch ", epoch, ",    Accuracy: ", acc , ",    Loss: ", loss/len(X))
+            print("Epoch ", epoch + 1, ",    Accuracy: ", acc , ",    Loss: ", loss/len(X))
     
     return model
     

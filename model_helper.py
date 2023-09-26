@@ -193,10 +193,11 @@ def mean_squared_error_prime(prediction, target):
 	assert len(prediction[0]) == len(target[0])
 
 	squared_error = [ [ -(targ - pred) for pred,targ in zip(prediction_i, target_i)] for prediction_i,target_i in zip(prediction,target) ]
+	#print(squared_error)
 	summed_up_squared_error = sum_up_matrix_by_cols(squared_error)
 	return summed_up_squared_error 
 
-#print(mean_squared_error([[0.8488765622021412 , 1]],[[1.659, 2]]))
+#print(mean_squared_error_prime([[0.061908245406225415], [0.038427675401711436]] , [[1.659], [3.606]]))
 
 #def cross_entropy(predictions, targets):
 #	if isinstance(predictions, list):
@@ -210,9 +211,8 @@ def cross_entropy(predictions, targets):
         cross.append([ -(math.log(p) * t) if p != 0 else -(math.log(1e-100) * t) for p,t in zip(vector_1, vector_2)])
     
     a = sum_up_matrix_by_cols(cross)
-    return sum(a)
+    return a
 
-#print(cross_entropy([[1,2,3] , [1,2,3]], [[1,2,3] , [1,2,3]]))
 
 #def cross_entropy_prime(predictions, targets):
 #    return -sum([ t / p if p != 0 else ( t / math.log(1e-100) ) for p,t in zip(predictions, targets)])
@@ -223,8 +223,9 @@ def cross_entropy_prime(predictions, targets):
 	for vector_1, vector_2 in zip(predictions, targets):
 		cross.append([-1 * (t / p) if p != 0 else ( t / math.log(1e-100) ) for p,t in zip(vector_1, vector_2)])
 	a = sum_up_matrix_by_cols(cross)
-	return sum(a)
+	return a
 
+#print(cross_entropy([[1,0,0] , [0,1,0]], [[1,0,0] , [0,1,0]]))
 
 def hit_or_miss(predictions, targets, round_function = 6, error_margin = 0.01):
 
@@ -234,6 +235,7 @@ def hit_or_miss(predictions, targets, round_function = 6, error_margin = 0.01):
 		#print(abs(round(p, round_function) - t) < error_margin)
 		acc += abs(round(p, round_function) - t) < error_margin
 	return acc / len(predictions)
+
 
 """
 def r_2(predictions, targets):
