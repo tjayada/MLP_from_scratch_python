@@ -1,18 +1,21 @@
 from model_helper import hit_or_miss, r_2, get_argmax, flatten, one_hot
+from testing import test
 # import model_helper dictionary that contains acti and error funcs and their derivatives
 # then use dic in train loop by accesing model.layers[-1].error_function_derivative to get og
 # to then use in train loop
 
-def train(model, X, y, epochs, show_epochs, accuracy_measure = hit_or_miss):
+def train(model, train_data, test_data, val_data, epochs, show_epochs, accuracy_measure = hit_or_miss):
     
-    # error_func = dic[f"{model.error_func_derivative}"]
+    X_train, y_train = train_data
+    X_test, y_test   = test_data
+    X_val, y_val     = val_data
 
     for epoch in range(epochs):
         accuracy = 0
         loss = 0
         preds = []
         trues = []
-        for batch_X, batch_y in zip(X, y):
+        for batch_X, batch_y in zip(X_train, y_train):
             #batch_X = [ [float(x) for x in batch_X]]
 
             #batch_X = [ batch_X ]
@@ -75,7 +78,8 @@ def train(model, X, y, epochs, show_epochs, accuracy_measure = hit_or_miss):
             #print(model.error_function(model.output, batch_y))
 
             # change MSE to include sum() in return function to not have to use it here ?
-            loss += sum(model.error_function(model.output, batch_y)) / len(batch_y)
+            #loss += sum(model.error_function(model.output, batch_y)) / len(batch_y)
+            loss += model.error_function(model.output, batch_y)
             #loss += model.error_function(model.output, batch_y) / len(batch_y)
             
             
@@ -92,8 +96,19 @@ def train(model, X, y, epochs, show_epochs, accuracy_measure = hit_or_miss):
             #r2 = r_2(preds, trues)
             #print(preds)
             #print(trues)
-            acc = accuracy_measure(preds, trues)
-            print("Epoch ", epoch + 1, ",    Accuracy: ", acc , ",    Loss: ", loss/len(X))
+            train_acc = accuracy_measure(preds, trues)
+            test_acc = test(model, X_test, y_test, accuracy_measure=accuracy_measure)
+            if epoch + 1 < 10:
+                space = "  "
+            elif 9 < epoch + 1 < 100:
+                space = " "
+            else:
+                space = ""
+            
+            print(f"Epoch {space}", epoch + 1, ",    Training Accuracy: ", "%.4f" % train_acc , ",    Test Accuracy: ", "%.4f" % test_acc , ",    Loss: ", "%.4f" % (loss/len(X_train)) )
     
+    val_acc = test(model, X_val, y_val, accuracy_measure=accuracy_measure)   
+    print("\n")
+    print("    Validation Accuracy: ", "%.4f" % val_acc )
     return model
     

@@ -92,7 +92,7 @@ def load_housing_data(train_test_split = 0.6, validation = False):
 
 
 
-def new_load_housing_data(train_test_split = 0.6, validation = False):
+def new_load_housing_data(train_test_split = 0.6, validation = False, batch_size=32):
     X, y = fetch_california_housing(return_X_y=True)
     import sklearn
 
@@ -112,7 +112,7 @@ def new_load_housing_data(train_test_split = 0.6, validation = False):
     new_x = []
     new_y = []
 
-    batch = 64
+    batch = batch_size
     count = 0
 
     batch_x = []
@@ -212,10 +212,10 @@ def new_load_mnist_data(train_test_split = 0.6, validation = False):
     X, y = fetch_openml("mnist_784", version=1, return_X_y=True, as_frame=False, parser='liac-arff')
     
 
-    scaler = sklearn.preprocessing.StandardScaler()
-    scaler.fit(X)
-    X = scaler.transform(X)
-    
+    #scaler = sklearn.preprocessing.StandardScaler()
+    #scaler.fit(X)
+    #X = scaler.transform(X)
+    #print(len(X))
 
      # shuffle data
     p = [(i,j) for i,j in zip(X, y)]
@@ -245,7 +245,7 @@ def new_load_mnist_data(train_test_split = 0.6, validation = False):
             new_y = []
             count = 0
         #np_x = np_x[:20]    
-        new_x.append([ float(x) for x in np_x ] )
+        new_x.append([ float(x / 255.0) for x in np_x ] )
         new_y.append( [int(elem_y) for elem_y in np_y] )
         
         count += 1
