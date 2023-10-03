@@ -74,7 +74,7 @@ class DenseLayer(object):
 		#for i in range(len(error_signal)):
 		#	error_signal_list.append(mat_mat_dot_product(error_signal[i], transpose(self.weights) ))
 		#print("error signal in update : ", error_signal)
-		error_signal = mat_mat_dot_product(error_signal, transpose(self.weights) )
+		error_signal_out = mat_mat_dot_product(error_signal, transpose(self.weights) )
 		
 		#print("error_signal fter dot pro: " , error_signal)
 		#print("\n \n")
@@ -86,8 +86,18 @@ class DenseLayer(object):
 		if self.batch_average:# and layer == len_layer:
 			#print(len(self.targets))
 			weight_gradient = mat_scalar_divide(gradient, len(self.targets))
+
+			#print("error_signal : " , error_signal)
+			
+			bias_gradient = sum_up_matrix_by_rows(error_signal)
+			#print("bias_gradient : " , bias_gradient)
+			bias_gradient = [sum(bias_gradient) / len(bias_gradient)] * len(self.bias)
+			bias_gradient = vec_scalar_divide(bias_gradient, len(self.targets))
+
 		else:
 			weight_gradient = gradient
+			bias_gradient = sum_up_matrix_by_rows(error_signal)
+			bias_gradient = [sum(bias_gradient) / len(bias_gradient)] * len(self.bias)
 		
 		#weight_gradient = mat_scalar_divide(gradient, len(self.targets))
 
@@ -100,16 +110,18 @@ class DenseLayer(object):
 		weight_gradient = mat_scalar_multiply(weight_gradient, self.learning_rate)
 		
 		#bias_gradient = vec_scalar_divide(sum_up_matrix_by_cols(gradient), len(self.targets))
-		bias_gradient = sum_up_matrix_by_cols(gradient)
+	
 		bias_gradient = vec_scalar_multiply(bias_gradient, self.learning_rate)
 
 		#print("self.weights" , self.weights)
 		#print("weight_gradient" , weight_gradient)
 		self.weights = mat_mat_minus(self.weights, weight_gradient)
 		#print("new self.weights" , self.weights)
+		#print("self.bias : " , self.bias)
+		#print("bias_gradient :", bias_gradient)
 		self.bias = vec_minus_vec(self.bias, bias_gradient)
 
-		return error_signal
+		return error_signal_out
 	
 
 

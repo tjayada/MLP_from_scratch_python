@@ -25,6 +25,7 @@ def vec_plus_vec(vector_1, vector_2):
 	return [ v_1 + v_2 for v_1, v_2 in zip(vector_1, vector_2) ]
 
 def vec_minus_vec(vector_1, vector_2):
+	assert len(vector_1) == len(vector_2)
 	return [ v_1 - v_2 for v_1, v_2 in zip(vector_1, vector_2)]
 
 def mat_plus_vec(matrix_1, vector_2):
@@ -153,6 +154,32 @@ def softmax(activation):
     
     return softmax_activation
 
+#print(softmax([[1,2,3], [7,8,8]]))
+#print(softmax([[1,2,3], [7,8,8]]))
+
+def softmax(A):
+	import numpy as np
+	expA = np.exp(A)
+	return expA / expA.sum(axis=1, keepdims=True)
+
+
+# sofmax activation
+def softmax(X):
+	import numpy as np
+	exps = np.exp(X - np.max(X,axis=1).reshape(-1,1))
+	return exps / np.sum(exps,axis=1)[:,None]
+
+
+
+#print(softmax([[1,2,3], [7,8,8]]))
+
+# derivative of softmax
+def softmax_derivative(pred):
+	import numpy as np
+	pred = np.array(pred)
+	return pred * (1 -(1 * pred).sum(axis=1)[:,None])
+
+#print(softmax_derivative([[1,2,3], [7,8,8]]))
 
 #def softmax_prime(activation): 
 #    derv_col = []
@@ -177,6 +204,9 @@ def softmax_prime(activation):
 			derv_col.append(derv_row)
 		derv.append(derv_col)
 	return derv
+
+#print("\n")
+#print(softmax_prime([[1,2,3]]))
 
 ########### loss functions ###########
 
@@ -271,29 +301,45 @@ def MSE_loss_grad(predictions, targets):
 
 
 def cross_entropy(predictions, targets):
-    cross = []
-    for vector_1, vector_2 in zip(predictions, targets):
-        cross.append([ -(math.log(p) * t) if p > 0 else -(math.log(1e-100) * t) for p,t in zip(vector_1, vector_2)])
-    
-    a = sum_up_matrix_by_cols(cross)
-    return a
+	cross = []
+	for vector_1, vector_2 in zip(predictions, targets):
+		cross.append([ -(math.log(p) * t) - (1-t) * math.log(1-p) if p > 0 else -(math.log(1e-100) * t) for p,t in zip(vector_1, vector_2)])
+
+	a = sum_up_matrix_by_cols(cross)
+	#print(a)
+	a = [val / len(predictions) for val in a]
+	return sum(a) / len(a)
+
+#print(cross_entropy( [[sigmoid(1),sigmoid(2),sigmoid(3),sigmoid(-2)],[sigmoid(6),sigmoid(-1),sigmoid(3), sigmoid(-8)]] , [[0,1,0,0],[0,0,1,0]]))
+
+#print("\n")
+
 
 #print(cross_entropy([[1, 3], [2, 4]] , [[3, 1], [4, 3]]))
+
+
+# example of calculating cross entropy for identical distributions
+
+
 #def cross_entropy_prime(predictions, targets):
 #    return -sum([ t / p if p != 0 else ( t / math.log(1e-100) ) for p,t in zip(predictions, targets)])
 
-"""
+
 def cross_entropy_prime(predictions, targets):
 	cross = []
 	for vector_1, vector_2 in zip(predictions, targets):
 		cross.append([-1 * (t / p) if p != 0 else ( t / math.log(1e-100) ) for p,t in zip(vector_1, vector_2)])
 	a = sum_up_matrix_by_cols(cross)
-	return a
+	return cross
+
+#print(cross_entropy_prime( [[sigmoid(1),sigmoid(2),sigmoid(3),sigmoid(-2)],[sigmoid(6),sigmoid(-1),sigmoid(3), sigmoid(-8)]] , [[0,1,0,0],[0,0,1,0]]))
 
 #print(cross_entropy_prime([[1,2,3,4],[1,2,3,4]] , [[0,1,0,0],[0,0,1,0]]))
+#print("\n")
 #print(cross_entropy_prime(softmax([[1,2,1,1]]) , [[1,0,0,0]]))
 
 
+"""
 import numpy as np
 def cross_entropy(logits,reference_answers):
 	# Compute crossentropy from logits[batch,n_classes] and ids of correct answers
@@ -315,12 +361,18 @@ def cross_entropy_prime(logits,reference_answers):
 	#print(ones_for_answers)
 	ll = np.exp(logits) / np.exp(logits).sum(axis=-1,keepdims=True)
 	a = - ones_for_answers + ll
-	#print("a : ", a)
+	print("a : ", a)
 	hm = []
+	print(logits.shape[0])
 	for vec_1 in a:
 		hm.append([float(b) / logits.shape[0] for b in vec_1])
 	#a = [ float(b) / logits.shape[0]  for b in a for b in a]
 	return  hm #[ h / logits.shape[0] for h in a ]
+
+#print("\n")
+#print(cross_entropy_prime( [[sigmoid(1),sigmoid(2),sigmoid(3),sigmoid(-2)],[sigmoid(6),sigmoid(-1),sigmoid(3), sigmoid(-8)]] , [[0,1,0,0],[0,0,1,0]]))
+
+#print(cross_entropy_prime([[1,2,3,4],[1,2,3,4]] , [[0,1,0,0],[0,0,1,0]]))
 
 #print(cross_entropy_prime([[1,2,1,1]] , [[1,0,0,0]]))
 #print(cross_entropy_prime([[1, 3], [2, 4]] , [[3, 1], [4, 3]]))
