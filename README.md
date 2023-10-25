@@ -55,4 +55,5 @@ The pre-implemented examples resulted in the following
 	
 ## Further improvements
 1. The biggest problem I faced was incorporating the derivative of the softmax activation function, as it becomes a Jacobian matrix, which inevitably introduces exploding gradients due to the increased size (from vector to matrix), as well as producing values many times larger than the original input. I was not able to control the gradient by clipping or normalisation, which may have been an implementation error on my part, but this feature is still missing. Of course, the shortened version in combination with the cross-entropy loss is implemented and used for example in the mnist task.
-2. 
+2. Of course, any precaution against overfitting could be beneficial
+3. Regularisation methods would also be welcome
