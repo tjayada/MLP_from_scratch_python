@@ -1,3 +1,4 @@
+import math
 import random
 import pickle
 from model_helper import scale_data
@@ -152,18 +153,24 @@ def new_load_mnist_data(train_test_split = 0.6, validation = False, batch_size=3
     from sklearn.datasets import fetch_openml
     X, y = fetch_openml("mnist_784", version=1, return_X_y=True, as_frame=False, parser='liac-arff')
     
-    with open("pickled_data/mnist_data_X.pkl", "wb") as file:
-        pickle.dump(X.tolist(), file)
-    
-    with open("pickled_data/mnist_data_y.pkl", "wb") as file:
-        pickle.dump(y.tolist(), file)
+    for i in range(0, 5):
+        with open(f"pickled_data/mnist_data_X_{i+1}.pkl", "wb") as file:
+            chunk = math.ceil(len(X) / 5)
+            pickle.dump(X.tolist()[chunk * i : chunk * (i+1)], file)
+        
+        with open(f"pickled_data/mnist_data_y_{i+1}.pkl", "wb") as file:
+            chunk = math.ceil(len(X) / 5)
+            pickle.dump(y.tolist()[chunk * i : chunk * (i+1)], file)
     """
     # read pickled mnist data 
-    with open("pickled_data/mnist_data_X.pkl", "rb") as file:
-        X = pickle.load(file)
-    
-    with open("pickled_data/mnist_data_y.pkl", "rb") as file:
-        y = pickle.load(file)
+    X = []
+    y = []
+    for i in range(0, 5):
+        with open(f"pickled_data/mnist_data_X_{i+1}.pkl", "rb") as file:
+            X += pickle.load(file)
+        
+        with open(f"pickled_data/mnist_data_y_{i+1}.pkl", "rb") as file:
+            y += pickle.load(file)
 
      # shuffle data
     p = [(i,j) for i,j in zip(X, y)]
