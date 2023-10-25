@@ -42,8 +42,8 @@ def run_mnist():
 	
 def main():
 	# run_logic_gates()
-	# run_california_housing()
-	run_mnist()
+	run_california_housing()
+	# run_mnist()
 	
 if __name__ == '__main__':
 	main()
